@@ -1,0 +1,37 @@
+backend/
+├── app/
+│   ├── __init__.py
+│   ├── main.py                 # ponto de entrada da aplicação FastAPI
+│   ├── api/
+│   │   ├── __init__.py
+│   │   ├── routes.py           # endpoints HTTP (API Controllers)
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── config.py           # configurações (variáveis ambiente, API keys)
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── iag_service.py      # consumo da API Gemini/GPT(LANGCHAIN)
+│   ├── validation/
+│   │   ├── __init__.py
+│   │   ├── input_validator.py  # validação do texto de entrada
+│   │   ├── output_validator.py # validação do resumo gerado
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── schemas.py          # Pydantic models para requests e responses
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   ├── logger.py           # configuração de logging
+│   ├── db/                    # opcional, caso use banco/cache
+│       ├── __init__.py
+│       ├── repository.py       # acesso a dados (save, read)
+│
+├── tests/
+│   ├── __init__.py
+│   ├── test_api.py             # testes para endpoints
+│   ├── test_validation.py      # testes para validação
+│   ├── test_services.py        # testes para serviços LANGCHAIN
+│
+├── requirements.txt
+├── README.md
+├── .env                       # variáveis ambiente sensíveis
+└── Dockerfile                 # container
