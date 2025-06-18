@@ -184,12 +184,4 @@ Lucas Araújo — [lucas.edson@ufrpe.br](mailto:lucas.edson@ufrpe.br)
 
 Este projeto está licenciado sob a licença MIT. Consulte o arquivo LICENSE para detalhes.
 
-## 🙏 Agradecimentos
-
-- Equipe de desenvolvimento
-- Orientadores e colaboradores
-- Comunidade open source
-- Google Gemini API
-
-
 
