@@ -36,7 +36,7 @@ A aplicação suporta múltiplos modelos do Google Gemini através da configura�
 
 ### Configuração no .env:
 ```env
-MODEL_PROVIDER=gemini-1.5-flash
+MODEL_PROVIDER=gemma-3-27b-it
 ```
 
 ## 📁 Estrutura do Projeto
