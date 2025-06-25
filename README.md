@@ -14,11 +14,30 @@ Este projeto consiste em uma aplicação backend desenvolvida em FastAPI que uti
 - Python 3.8+
 - FastAPI
 - Langchain
-- Gemini API
+- **Google Gemini API** (Modelos configuráveis)
 - Docker
-- PostgreSQL (opcional)
+- PostgreSQL
 - Pytest para testes
 - Pydantic para validação de dados
+
+## 🤖 Modelos Gemini Suportados
+
+A aplicação suporta múltiplos modelos do Google Gemini através da configuração `MODEL_PROVIDER` no arquivo `.env`:
+
+### Modelos Disponíveis:
+- `gemini-1.5-flash` (padrão) - Rápido e eficiente
+- `gemini-1.5-pro` - Mais poderoso e preciso
+- `gemini-1.0-pro` - Versão estável
+- `gemini-1.5` - Alias para gemini-1.5-flash
+- `gemini-pro` - Alias para gemini-1.5-pro
+- `gemini-flash` - Alias para gemini-1.5-flash
+- `gemini-1.0` - Alias para gemini-1.0-pro
+- `gemma-3-27b-it` - Modelo Gemma 3
+
+### Configuração no .env:
+```env
+MODEL_PROVIDER=gemini-1.5-flash
+```
 
 ## 📁 Estrutura do Projeto
 
@@ -31,24 +50,27 @@ backend/
 │   ├── core/
 │   │   └── config.py           # Configurações e variáveis de ambiente
 │   ├── services/
-│   │   └── iag_service.py      # Integração com API Gemini/GPT via Langchain
+│   │   └── iag_service.py      # Integração com API Gemini via Langchain
 │   ├── validation/
 │   │   ├── input_validator.py  # Validação do texto de entrada
 │   │   └── output_validator.py # Validação do resumo gerado
 │   ├── models/
-│   │   └── schemas.py          # Modelos Pydantic para requests/responses
+│   │   ├── schemas.py          # Modelos Pydantic para requests/responses
+│   │   └── sql_models.py       # Modelos SQLAlchemy para banco de dados
 │   ├── utils/
 │   │   └── logger.py           # Configuração de logging
-│   └── db/                     # Opcional: acesso a banco/cache
+│   └── db/                     # Acesso a banco PostgreSQL
+│       ├── connection.py       # Configuração de conexão com banco
+│       ├── init_db.py          # Inicialização do banco de dados
 │       └── repository.py       # Repositório para operações de dados
 ├── tests/
 │   ├── test_api.py             # Testes dos endpoints da API
 │   ├── test_validation.py      # Testes dos validadores de entrada e saída
-│   └── test_services.py        # Testes dos serviços Gemini/GPT
+│   └── test_services.py        # Testes dos serviços Gemini
 ├── requirements.txt            # Dependências do projeto
 ├── .env                       # Variáveis de ambiente sensíveis
 ├── Dockerfile                 # Containerização da aplicação
-└── docker-compose.yml         # Container com API e banco PostgreSQL (se aplicável)
+└── docker-compose.yml         # Container com API e banco PostgreSQL
 ```
 
 ## 🛠️ Instalação e Configuração
@@ -57,8 +79,33 @@ backend/
 
 * Python 3.8+
 * Docker (opcional, para containerização)
-* Conta e credenciais API Gemini/GPT (via Langchain)
+* **Conta Google Cloud e credenciais API Gemini**
 * Git
+
+### Configuração das Variáveis de Ambiente
+
+Crie um arquivo `.env` na pasta `backend/` com as seguintes configurações:
+
+```env
+# Configurações da API
+APP_NAME=API - textual summaries
+ENVIRONMENT=development
+DEBUG=true
+
+# Chaves de serviços externos
+GOOGLE_API_KEY=sua_chave_google_aqui
+MODEL_PROVIDER=gemini-1.5-flash
+
+# Banco de Dados PostgreSQL
+DATABASE_URL=postgresql+asyncpg://user:senha123@db:5432/db_analise
+```
+
+### 🔑 Como obter a Google API Key:
+
+1. Acesse o [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Faça login com sua conta Google
+3. Clique em "Create API Key"
+4. Copie a chave gerada para o campo `GOOGLE_API_KEY` no `.env`
 
 ### Instalação Local
 
@@ -83,7 +130,6 @@ pip install -r requirements.txt
 
 4. Configure as variáveis de ambiente:
 ```bash
-cp .env.example .env
 # Edite o arquivo .env com suas credenciais
 ```
 
@@ -94,20 +140,13 @@ uvicorn app.main:app --reload
 
 ### Executando com Docker
 
-1. Construa a imagem:
-```bash
-docker build -t resumo-gemini-api .
-```
-
-2. Execute o container:
-```bash
-docker run -p 8000:8000 --env-file .env resumo-gemini-api
-```
-
-Ou com docker-compose:
+1. Configure o arquivo `.env` com suas credenciais
+2. Execute com docker-compose:
 ```bash
 docker-compose up -d
 ```
+
+A aplicação estará disponível em `http://localhost:8000`
 
 ## 📚 Documentação da API
 
@@ -117,16 +156,17 @@ A documentação interativa da API está disponível em:
 
 ### Endpoints Principais
 
-#### POST `/generate-summary`
+#### POST `/api/v1/analise`
 Gera um resumo automático do texto didático fornecido.
 
 **Request:**
 ```json
 {
-  "text": "Seu texto didático aqui...",
-  "options": {
+  "texto": "Seu texto didático aqui...",
+  "opcoes": {
     "max_length": 500,
-    "language": "pt-BR"
+    "language": "pt-BR",
+    "nivel_ensino": "medio"
   }
 }
 ```
@@ -134,14 +174,19 @@ Gera um resumo automático do texto didático fornecido.
 **Response:**
 ```json
 {
-  "summary": "Resumo gerado automaticamente pelo modelo Gemini.",
+  "resumo": "Resumo gerado automaticamente pelo modelo Gemini configurado.",
+  "classificacao": "",
   "metadata": {
-    "original_length": 1000,
-    "summary_length": 300,
-    "processing_time": 2.5
+    "tempo_processamento": 2.5,
+    "tamanho_original": 1000,
+    "tamanho_resumo": 300,
+    "taxa_compressao": 0.3
   }
 }
 ```
+
+#### GET `/api/v1/historico`
+Lista o histórico de resumos gerados.
 
 ## 🧪 Testes
 
@@ -158,9 +203,35 @@ pytest --cov=app tests/
 ## 📊 Métricas e Monitoramento
 
 - Logs detalhados de operações
-- Métricas de performance
+- Métricas de performance (tempo de processamento)
 - Monitoramento de uso da API
 - Rastreamento de erros
+- Histórico de resumos gerados
+
+## 🔧 Configuração Avançada
+
+### Alterando o Modelo Gemini
+
+Para usar um modelo diferente, altere o `MODEL_PROVIDER` no arquivo `.env`:
+
+```env
+# Para usar o modelo mais poderoso
+MODEL_PROVIDER=gemini-1.5-pro
+
+# Para usar o modelo mais rápido
+MODEL_PROVIDER=gemini-1.5-flash
+
+# Para usar o modelo experimental
+MODEL_PROVIDER=gemma-3-27b-it
+```
+
+### Configuração do Banco de Dados
+
+O banco PostgreSQL é configurado automaticamente via Docker Compose. Para configuração manual:
+
+```env
+DATABASE_URL=postgresql+asyncpg://usuario:senha@localhost:5432/nome_do_banco
+```
 
 ## 📝 Paper Científico
 
