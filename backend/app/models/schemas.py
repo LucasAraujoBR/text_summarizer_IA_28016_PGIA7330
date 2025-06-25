@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, Dict, Any
 from datetime import datetime
 
@@ -19,14 +19,16 @@ class OpcoesResumo(BaseModel):
         description="Nível de ensino do resumo (fundamental, medio, superior)"
     )
 
-    @validator('language')
+    @field_validator('language')
+    @classmethod
     def validate_language(cls, v):
         """Valida o idioma do resumo."""
         if v not in ["pt-BR", "en-US"]:
             raise ValueError("Idioma deve ser pt-BR ou en-US")
         return v
 
-    @validator('nivel_ensino')
+    @field_validator('nivel_ensino')
+    @classmethod
     def validate_nivel_ensino(cls, v):
         """Valida o nível de ensino."""
         if v not in ["fundamental", "medio", "superior"]:
@@ -46,8 +48,8 @@ class AnaliseInput(BaseModel):
         description="Configurações opcionais para geração do resumo"
     )
 
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "texto": "A fotossíntese é o processo pelo qual as plantas convertem energia luminosa em energia química, produzindo oxigênio como subproduto. Este processo é fundamental para a vida na Terra, pois é a principal fonte de oxigênio atmosférico.",
                 "opcoes": {
@@ -57,6 +59,7 @@ class AnaliseInput(BaseModel):
                 }
             }
         }
+    }
 
 class Metadata(BaseModel):
     """Metadados do processamento."""
@@ -69,10 +72,10 @@ class AnaliseOutput(BaseModel):
     """Modelo de saída da análise."""
     resumo: str = Field(..., description="Resumo gerado a partir do texto.")
     classificacao: str = Field(..., description="Classificação do conteúdo (ex: biologia, matemática, etc).")
-    metadata: Metadata = Field(..., description="Metadados do processamento")
+    metadata: Optional[Metadata] = Field(None, description="Metadados do processamento")
 
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "resumo": "Processo de fotossíntese: conversão de energia luminosa em química pelas plantas, gerando oxigênio. Fundamental para a vida na Terra.",
                 "classificacao": "biologia",
@@ -84,6 +87,7 @@ class AnaliseOutput(BaseModel):
                 }
             }
         }
+    }
 
 class ResultadoHistorico(BaseModel):
     """Modelo para histórico de resumos."""
@@ -94,8 +98,8 @@ class ResultadoHistorico(BaseModel):
     metadata: Dict[str, Any] = Field(..., description="Metadados do processamento")
     criado_em: datetime = Field(..., description="Data e hora de criação")
 
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "id": 1,
                 "texto_original": "Texto original...",
@@ -110,3 +114,4 @@ class ResultadoHistorico(BaseModel):
                 "criado_em": "2024-02-20T10:30:00"
             }
         }
+    }

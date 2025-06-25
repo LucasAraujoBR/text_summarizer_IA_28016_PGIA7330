@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from app.api.routes import router as api_router
 from app.utils.logger import setup_logger
 from app.core.config import settings
+from app.db.init_db import init_db
+import asyncio
 
 # Configura o logger
 setup_logger()
@@ -10,7 +12,7 @@ setup_logger()
 app = FastAPI(
     title=settings.app_name,
     description="""
-    # 🎓 API de Geração Automática de Resumos Didáticos
+    # API de Geração Automática de Resumos Didáticos
 
     ## 📝 Descrição
     API desenvolvida para gerar resumos automáticos de textos didáticos utilizando o modelo Gemini via Langchain.
@@ -30,7 +32,7 @@ app = FastAPI(
 
     ## 📚 Endpoints
 
-    ### POST /generate-summary
+    ### POST /analise
     Gera um resumo automático do texto didático fornecido.
 
     **Parâmetros:**
@@ -51,12 +53,6 @@ app = FastAPI(
     }
     ```
 
-    ## 🔐 Autenticação
-    A API utiliza autenticação via API Key no header:
-    ```
-    X-API-Key: sua_api_key
-    ```
-
     ## 📊 Métricas
     - Tempo de processamento
     - Tamanho do texto original e resumo
@@ -69,9 +65,6 @@ app = FastAPI(
 
     ## 🔄 Versão
     Versão atual: 0.1.0
-
-    ## 📞 Suporte
-    Para suporte, entre em contato: lucas.edson@ufrpe.br
     """,
     version="0.1.0",
     debug=settings.debug,
@@ -95,13 +88,22 @@ app = FastAPI(
     contact={
         "name": "Lucas Araújo",
         "email": "lucas.edson@ufrpe.br",
-        "url": "https://github.com/seu-usuario"
+        "url": "https://github.com/LucasAraujoBR"
     },
     license_info={
         "name": "MIT",
         "url": "https://opensource.org/licenses/MIT"
     }
 )
+
+@app.on_event("startup")
+async def startup_event():
+    """Inicializa o banco de dados na inicialização da aplicação."""
+    try:
+        await init_db()
+        print("✅ Banco de dados inicializado com sucesso!")
+    except Exception as e:
+        print(f"⚠️ Erro ao inicializar banco de dados: {e}")
 
 # Inclui rotas
 app.include_router(api_router)

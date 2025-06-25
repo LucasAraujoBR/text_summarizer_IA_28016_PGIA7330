@@ -2,6 +2,7 @@
 fastapi==0.109.2
 uvicorn==0.27.1
 pydantic==2.6.1
+pydantic-settings==2.2.1
 
 # Banco de Dados
 sqlalchemy==2.0.27
@@ -10,7 +11,9 @@ psycopg2-binary==2.9.9
 
 # IA e Processamento de Linguagem
 langchain==0.1.9
-google-generativeai==0.3.2
+langchain-core==0.1.27
+langchain-google-genai==0.0.11
+google-generativeai==0.4.1
 openai==1.12.0
 
 # Utilitários
