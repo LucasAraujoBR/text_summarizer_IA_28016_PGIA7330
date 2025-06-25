@@ -1,1 +1,5 @@
 pandas
+matplotlib
+wordcloud
+seaborn
+numpy==2.3.1
