@@ -1,0 +1,5 @@
+.venv/
+data/wikihowAll.csv
+.DS_Store
+__pycache__/
+.env
