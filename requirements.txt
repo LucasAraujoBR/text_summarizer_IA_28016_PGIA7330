@@ -3,3 +3,9 @@ matplotlib
 wordcloud
 seaborn
 numpy==2.3.1
+rouge-score 
+nltk 
+bert-score
+ipywidgets 
+jupyterlab_widgets
+plotly
